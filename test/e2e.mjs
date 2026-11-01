@@ -220,22 +220,22 @@ await step('downloads: add (unsafe links rejected) and delete', async () => {
 
 // ---------------------------------------------------------------- accounts
 await step('accounts: create a second admin, sign in as them, delete rules', async () => {
-  await admin.post('/admin/users', { username: 'e2e-second', password: 'second-password-1', confirm: 'second-password-1' });
+  await admin.post('/admin/users', { username: 'e2e.second+test@example.org', password: 'second-password-1', confirm: 'second-password-1' });
   assert.equal(flashOf(admin).type, 'ok');
-  await admin.post('/admin/users', { username: 'E2E-Second', password: 'second-password-1', confirm: 'second-password-1' });
+  await admin.post('/admin/users', { username: 'E2E.Second+Test@Example.org', password: 'second-password-1', confirm: 'second-password-1' });
   assert.match(flashOf(admin).message, /已經存在/); // usernames are case-insensitive
   await admin.post('/admin/users', { username: 'short-pw', password: 'short', confirm: 'short' });
   assert.equal(flashOf(admin).type, 'error');
   const second = new Client();
-  const login = await second.post('/admin/login', { username: 'E2E-SECOND', password: 'second-password-1' });
+  const login = await second.post('/admin/login', { username: 'E2E.SECOND+TEST@EXAMPLE.ORG', password: 'second-password-1' });
   assert.equal(login.res.status, 303);
   assert.equal((await second.get('/admin')).res.status, 200);
 
   const users = await admin.get('/admin/users');
   const ids = Object.fromEntries([...users.text.matchAll(/<strong>([^<]+)<\/strong>[\s\S]*?(?:action="\/admin\/users\/(\d+)\/delete"|<\/tr>)/g)].map((m) => [m[1], m[2]]));
-  assert.ok(ids['e2e-second'], 'second admin listed with a delete button');
+  assert.ok(ids['e2e.second+test@example.org'], 'second admin listed with a delete button');
   assert.equal(ids[USER], undefined, 'no delete button for the current account');
-  await admin.post(`/admin/users/${ids['e2e-second']}/delete`, {});
+  await admin.post(`/admin/users/${ids['e2e.second+test@example.org']}/delete`, {});
   assert.equal((await second.get('/admin')).res.status, 303, 'deleted admin loses their session');
 });
 

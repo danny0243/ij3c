@@ -73,8 +73,8 @@ export function pubDate(value) {
 }
 
 export function username(value) {
-  const v = text(value, { label: '帳號', max: 32 });
-  if (!/^[A-Za-z0-9._-]{3,32}$/.test(v)) throw new ValidationError('帳號只能使用英數字、點、底線與連字號，長度 3–32');
+  const v = text(value, { label: '帳號', max: 64 });
+  if (!/^[A-Za-z0-9._@+-]{3,64}$/.test(v)) throw new ValidationError('帳號只能使用英數字與 . _ @ + -（可直接用 Email），長度 3–64');
   return v;
 }
 

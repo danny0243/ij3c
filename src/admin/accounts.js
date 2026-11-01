@@ -29,7 +29,7 @@ export function loginGet(ctx) {
 
 export async function loginPost(ctx) {
   const form = await ctx.form();
-  const username = str(form, 'username').trim().slice(0, 32);
+  const username = str(form, 'username').trim().slice(0, 64);
   const password = str(form, 'password').slice(0, 200);
   const ip = ctx.request.headers.get('cf-connecting-ip') ?? '127.0.0.1';
   const fail = (error, status = 401) => respond(loginPage({ error, username }), { status });

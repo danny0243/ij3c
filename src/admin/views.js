@@ -79,7 +79,7 @@ export function loginPage({ error, username = '' } = {}) {
     <h1>IJ3C 後台管理</h1>
     ${error ? html`<div class="flash flash-error" role="alert">${error}</div>` : ''}
     <form method="post" action="/admin/login" class="stack">
-      ${field('帳號', input('username', username, { required: true, autocomplete: 'username', autofocus: true, maxlength: 32 }))}
+      ${field('帳號', input('username', username, { required: true, autocomplete: 'username', autofocus: true, maxlength: 64 }))}
       ${field('密碼', input('password', '', { type: 'password', required: true, autocomplete: 'current-password', maxlength: 200 }))}
       <button class="btn btn-primary" type="submit">登入</button>
     </form>
@@ -362,7 +362,7 @@ export function usersPage({ users, me }) {
     <section class="card">
       <h2>新增管理員</h2>
       <form method="post" action="/admin/users" class="grid">
-        ${field('帳號', input('username', '', { required: true, maxlength: 32, autocomplete: 'off' }), '英數字、點、底線、連字號，3–32 字元')}
+        ${field('帳號', input('username', '', { required: true, maxlength: 64, autocomplete: 'off' }), '可直接使用 Email；英數字與 . _ @ + -，3–64 字元')}
         <div></div>
         ${field('密碼', input('password', '', { type: 'password', required: true, minlength: 10, maxlength: 200, autocomplete: 'new-password' }), '至少 10 個字元')}
         ${field('再輸入一次密碼', input('confirm', '', { type: 'password', required: true, minlength: 10, maxlength: 200, autocomplete: 'new-password' }))}

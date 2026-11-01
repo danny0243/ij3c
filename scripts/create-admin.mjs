@@ -1,8 +1,10 @@
 // Creates (or resets the password of) a back-office administrator in the D1 database.
 // The password is typed into your own terminal (hidden) and only its PBKDF2 hash is written to the database.
 //
-//   node scripts/create-admin.mjs <username> --remote
-//   node scripts/create-admin.mjs <username> --local [--persist-to <dir>]
+//   node scripts/create-admin.mjs [username] --remote
+//   node scripts/create-admin.mjs [username] --local [--persist-to <dir>]
+//
+// Without a username the script asks for one.
 //
 // For automated tests the password may be supplied in the ADMIN_PASSWORD environment variable.
 
@@ -10,22 +12,32 @@ import { pbkdf2Sync, randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { createInterface } from 'node:readline';
 import { join } from 'node:path';
 
 const ITERATIONS = 100_000; // must match src/auth.js
 
 const args = process.argv.slice(2);
-const username = args.find((a) => !a.startsWith('--') && args[args.indexOf(a) - 1] !== '--persist-to');
+let username = args.find((a) => !a.startsWith('--') && args[args.indexOf(a) - 1] !== '--persist-to');
 const remote = args.includes('--remote');
 const local = args.includes('--local');
 const persist = args.includes('--persist-to') ? args[args.indexOf('--persist-to') + 1] : null;
 
-if (!username || remote === local) {
-  console.error('Usage: node scripts/create-admin.mjs <username> (--remote | --local [--persist-to <dir>])');
+if (remote === local) {
+  console.error('Usage: node scripts/create-admin.mjs [username] (--remote | --local [--persist-to <dir>])');
   process.exit(2);
 }
-if (!/^[A-Za-z0-9._-]{3,32}$/.test(username)) {
-  console.error('Username: 3-32 characters, letters, digits, dot, underscore or hyphen.');
+if (!username) {
+  if (!process.stdin.isTTY) {
+    console.error('No username given and no terminal to ask in.');
+    process.exit(2);
+  }
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  username = (await new Promise((resolve) => rl.question('Administrator username (an e-mail address works): ', resolve))).trim();
+  rl.close();
+}
+if (!/^[A-Za-z0-9._@+-]{3,64}$/.test(username)) {
+  console.error('Username: 3-64 characters from letters, digits and . _ @ + - (an e-mail address works).');
   process.exit(2);
 }
 

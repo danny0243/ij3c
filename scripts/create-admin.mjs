@@ -1,5 +1,5 @@
 // Creates (or resets the password of) a back-office administrator in the D1 database.
-// The password is typed into your own terminal (hidden) and only its PBKDF2 hash is written to the database.
+// The password is typed into your own terminal (shown as *) and only its PBKDF2 hash is written to the database.
 //
 //   node scripts/create-admin.mjs [username] --remote
 //   node scripts/create-admin.mjs [username] --local [--persist-to <dir>]
@@ -59,8 +59,13 @@ function promptHidden(question) {
           return resolve(value);
         }
         if (ch === '\u0003') process.exit(130); // Ctrl+C
-        if (ch === '\u007f' || ch === '\b') value = value.slice(0, -1);
-        else value += ch;
+        if (ch === '\u007f' || ch === '\b') {
+          if (value) process.stdout.write('\b \b');
+          value = value.slice(0, -1);
+        } else {
+          value += ch;
+          process.stdout.write('*');
+        }
       }
     };
     process.stdin.on('data', onData);
@@ -69,10 +74,21 @@ function promptHidden(question) {
 
 let password = process.env.ADMIN_PASSWORD;
 if (!password) {
-  password = await promptHidden(`Password for ${username} (min. 10 characters): `);
-  const again = await promptHidden('Repeat password: ');
-  if (password !== again) {
-    console.error('Passwords do not match.');
+  for (let attempt = 1; attempt <= 5 && !password; attempt++) {
+    const first = await promptHidden(`Password for ${username} (at least 10 characters): `);
+    if (first.length < 10) {
+      console.error(`Too short (${first.length} characters). Please use at least 10.`);
+      continue;
+    }
+    const again = await promptHidden('Repeat the password: ');
+    if (first !== again) {
+      console.error('The two entries differ. Please try again.');
+      continue;
+    }
+    password = first;
+  }
+  if (!password) {
+    console.error('Giving up after 5 attempts.');
     process.exit(1);
   }
 }
@@ -94,7 +110,7 @@ writeFileSync(
     `DELETE FROM sessions WHERE user_id = (SELECT id FROM admin_users WHERE username = '${username}');\n`,
 );
 
-const wranglerArgs = ['wrangler', 'd1', 'execute', 'ij3c', remote ? '--remote' : '--local', '--file', file];
+const wranglerArgs = ['wrangler', 'd1', 'execute', 'ij3c', remote ? '--remote' : '--local', '--yes', '--file', file];
 if (persist) wranglerArgs.push('--persist-to', persist);
 // npx is a .cmd shim on Windows, so it needs a shell; build one quoted command line (all values are validated or ours).
 const quote = (a) => (/[\s"]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a);

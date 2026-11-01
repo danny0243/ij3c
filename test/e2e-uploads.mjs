@@ -28,6 +28,7 @@ let issueId;
 await step('the edit page offers file inputs once R2 is bound', async () => {
   const created = await admin.post('/admin/issues', { volume: '98', number: '1', pub_date: '2030/2', issn: 'ISSN X', description: 'Upload test issue' });
   issueId = idFrom(created.res);
+  await admin.post(`/admin/issues/${issueId}`, { volume: '98', number: '1', pub_date: '2030/2', issn: 'ISSN X', description: 'Upload test issue', published: '1' });
   const { text } = await admin.get(`/admin/issues/${issueId}`);
   assert.match(text, /name="cover_file"/);
   assert.match(text, /name="pdf_file"/);

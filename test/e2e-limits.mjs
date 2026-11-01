@@ -58,6 +58,7 @@ const upload = async (marker, extra = 0) => {
 
 await step('write cap: uploads stop once the monthly Class A cap is reached', async () => {
   issueId = idFrom((await admin.post('/admin/issues', { volume: '97', number: '1', pub_date: '2030/3', issn: 'X', description: 'limits test' })).res);
+  await admin.post(`/admin/issues/${issueId}`, { volume: '97', number: '1', pub_date: '2030/3', issn: 'X', description: 'limits test', published: '1' }); // drafts have no public page
   const before = await usage();
   await setCaps(100, before.a + 2, 5_000_000);
   await upload('w1');

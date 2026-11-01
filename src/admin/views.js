@@ -149,6 +149,7 @@ export function issuesList({ issues, defaults }) {
     </section>
     <section class="card">
       <h2>新增期別</h2>
+      <p class="muted">新建立的期別預設是「草稿」，前台看不到；加入論文後再到期別頁把「狀態」改成「公開」。</p>
       <form method="post" action="/admin/issues" class="grid">
         ${field('卷（Volume）', input('volume', '', { type: 'number', min: 1, max: 9999, required: true }))}
         ${field('期（No.）', input('number', '', { type: 'number', min: 1, max: 9999, required: true }))}

@@ -99,10 +99,17 @@ await step('settings: invalid email / missing {email} placeholder are rejected',
 
 // ---------------------------------------------------------------- issues & papers
 let issueId;
-await step('issues: create, appears first on the home page, empty issue page', async () => {
+await step('issues: created as draft, then published: appears first on the home page, empty issue page', async () => {
   const res = await admin.post('/admin/issues', { volume: '99', number: '1', pub_date: '2030/1', issn: '2304-2516 (Print), 2304-2524 (Online)', description: 'E2E test issue' });
   assert.equal(res.res.status, 303);
   issueId = idFrom(res.res);
+  // new issues start as drafts: invisible until published
+  assert.equal((await anon.get('/volume/99-1')).res.status, 404);
+  assert.doesNotMatch((await anon.get('/')).text, /Vol\.99, No\.1/);
+  assert.match(flashOf(admin).message, /草稿/);
+  const publish = new FormData();
+  for (const [k, v] of Object.entries({ volume: '99', number: '1', pub_date: '2030/1', issn: '2304-2516 (Print), 2304-2524 (Online)', description: 'E2E test issue', published: '1' })) publish.set(k, v);
+  await admin.post(`/admin/issues/${issueId}`, publish);
   const home = (await anon.get('/')).text;
   assert.match(home, /Vol\.99, No\.1/);
   assert.ok(home.indexOf('Vol.99, No.1') < home.indexOf('Vol.13, No.1'), 'new issue should be listed first');

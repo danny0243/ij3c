@@ -68,7 +68,7 @@ export async function issuesCreate(ctx) {
   const f = issueFields(await ctx.form());
   let result;
   try {
-    result = await ctx.env.DB.prepare('INSERT INTO issues (volume, number, pub_date, description, issn) VALUES (?, ?, ?, ?, ?)')
+    result = await ctx.env.DB.prepare('INSERT INTO issues (volume, number, pub_date, description, issn, published) VALUES (?, ?, ?, ?, ?, 0)')
       .bind(f.volume, f.number, f.pub_date, f.description, f.issn)
       .run();
   } catch (err) {
@@ -76,7 +76,7 @@ export async function issuesCreate(ctx) {
     throw err;
   }
   await audit(ctx, '新增期別', label(f));
-  return done(ctx, `/admin/issues/${result.meta.last_row_id}`, `已建立 ${label(f)}，接著可以新增論文`);
+  return done(ctx, `/admin/issues/${result.meta.last_row_id}`, `已建立 ${label(f)}（目前是草稿，前台看不到）。加入論文後，請把「狀態」改成「公開」。`);
 }
 
 export async function issueGet(ctx, id) {

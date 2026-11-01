@@ -1,0 +1,14 @@
+{
+  "name": "ij3c",
+  "private": true,
+  "type": "module",
+  "description": "IJ3C journal site: Cloudflare Worker + D1 + R2",
+  "scripts": {
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy",
+    "db:migrate": "npx wrangler d1 migrations apply ij3c --remote",
+    "db:migrate:local": "npx wrangler d1 migrations apply ij3c --local",
+    "admin:create": "node scripts/create-admin.mjs",
+    "test": "node test/golden.mjs && node test/e2e.mjs && node test/e2e-uploads.mjs && node test/e2e-limits.mjs"
+  }
+}

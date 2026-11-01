@@ -1,5 +1,27 @@
 name = "ij3c"
-compatibility_date = "2026-07-31"
+main = "src/index.js"
+compatibility_date = "2026-06-24" # newest date the local workerd (wrangler dev) supports
 
 [assets]
-directory = "."
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ij3c"
+database_id = "168e95cb-fe5b-48c0-b19d-484ef36beaa0"
+migrations_dir = "migrations"
+
+# PDFs uploaded through the back office (shipped PDFs under public/ are served by Workers Assets)
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "ij3c-files"
+
+# Per-IP limit on downloads of uploaded PDFs, so crawlers cannot burn through R2 read operations
+[[ratelimits]]
+name = "PDF_LIMITER"
+namespace_id = "1001"
+simple = { limit = 60, period = 60 }
+
+[observability]
+enabled = true
